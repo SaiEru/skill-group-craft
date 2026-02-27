@@ -6,9 +6,9 @@ const corsHeaders = {
 };
 
 const lengthPrompts: Record<string, string> = {
-  short: "Give a brief, concise explanation in about 3-4 paragraphs. Use clear headings with ## markdown.",
-  medium: "Give a moderately detailed explanation in about 6-8 paragraphs. Use headings (##), bullet points, and examples where helpful.",
-  long: "Give a comprehensive, in-depth explanation in about 10-15 paragraphs. Use headings (##), subheadings (###), bullet points, numbered lists, code examples if relevant, and real-world analogies.",
+  short: "Return exactly 3-4 sections.",
+  medium: "Return exactly 5-7 sections.",
+  long: "Return exactly 8-12 sections.",
 };
 
 serve(async (req) => {
@@ -34,14 +34,48 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an expert teacher writing on a whiteboard. Explain topics clearly using well-structured markdown. Use headings, bullet points, bold text, and examples. Write as if you're teaching a student step by step. ${lengthInstruction}`,
+            content: `You are an expert teacher explaining topics on a whiteboard. You must return a JSON array of sections. Each section has a "heading" and "body". The body should be a clear explanation in plain text (no markdown). Write as if you're speaking to a student. ${lengthInstruction}
+
+Return ONLY valid JSON in this format, no other text:
+[
+  { "heading": "Section Title", "body": "Explanation text here..." },
+  { "heading": "Another Section", "body": "More explanation..." }
+]`,
           },
           {
             role: "user",
-            content: `Explain the following topic on the whiteboard: "${topic}"`,
+            content: `Explain: "${topic}"`,
           },
         ],
-        stream: true,
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "whiteboard_sections",
+              description: "Return structured whiteboard sections for teaching a topic.",
+              parameters: {
+                type: "object",
+                properties: {
+                  sections: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        heading: { type: "string", description: "Section heading" },
+                        body: { type: "string", description: "Section explanation in plain spoken English" },
+                      },
+                      required: ["heading", "body"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["sections"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "whiteboard_sections" } },
       }),
     });
 
@@ -63,8 +97,21 @@ serve(async (req) => {
       });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    
+    let sections;
+    if (toolCall) {
+      sections = JSON.parse(toolCall.function.arguments).sections;
+    } else {
+      // Fallback: try parsing content directly
+      const content = data.choices?.[0]?.message?.content || "[]";
+      const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      sections = JSON.parse(cleaned);
+    }
+
+    return new Response(JSON.stringify({ sections }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("whiteboard error:", e);
