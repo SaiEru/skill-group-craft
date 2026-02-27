@@ -2,12 +2,13 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Eraser, Play, Loader2, Volume2, VolumeX, Pause } from "lucide-react";
+import { Eraser, Play, Loader2, Volume2, VolumeX, Pause, User } from "lucide-react";
 
 const WHITEBOARD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whiteboard`;
 
 type LengthOption = "short" | "medium" | "long";
 type Section = { heading: string; body: string };
+type VoiceGender = "male" | "female";
 
 const lengthLabels: Record<LengthOption, { label: string; desc: string }> = {
   short: { label: "Short", desc: "Quick overview" },
@@ -15,7 +16,19 @@ const lengthLabels: Record<LengthOption, { label: string; desc: string }> = {
   long: { label: "Long", desc: "In-depth explanation" },
 };
 
-function speakText(text: string): Promise<void> {
+function getVoiceByGender(gender: VoiceGender): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices();
+  const enVoices = voices.filter((v) => v.lang.startsWith("en"));
+  if (gender === "female") {
+    return enVoices.find((v) => /female|zira|samantha|karen|fiona|victoria|susan/i.test(v.name))
+      || enVoices.find((v) => !/male|david|james|daniel|george|mark/i.test(v.name))
+      || enVoices[0] || null;
+  }
+  return enVoices.find((v) => /\bmale\b|david|james|daniel|george|mark/i.test(v.name))
+    || enVoices[1] || enVoices[0] || null;
+}
+
+function speakText(text: string, gender: VoiceGender): Promise<void> {
   return new Promise((resolve, reject) => {
     if (!("speechSynthesis" in window)) {
       resolve();
@@ -24,7 +37,9 @@ function speakText(text: string): Promise<void> {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.95;
-    utterance.pitch = 1;
+    utterance.pitch = gender === "female" ? 1.1 : 0.9;
+    const voice = getVoiceByGender(gender);
+    if (voice) utterance.voice = voice;
     utterance.onend = () => resolve();
     utterance.onerror = (e) => {
       if (e.error === "canceled" || e.error === "interrupted") resolve();
@@ -42,6 +57,7 @@ export default function Whiteboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [voiceGender, setVoiceGender] = useState<VoiceGender>("male");
   const cancelledRef = useRef(false);
   const boardRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +68,7 @@ export default function Whiteboard() {
     }
   }, [visibleIndex]);
 
-  const playSequence = useCallback(async (allSections: Section[], muted: boolean) => {
+  const playSequence = useCallback(async (allSections: Section[], muted: boolean, gender: VoiceGender) => {
     setIsPlaying(true);
     cancelledRef.current = false;
 
@@ -62,15 +78,13 @@ export default function Whiteboard() {
 
       if (!muted) {
         try {
-          // Speak heading then body
-          await speakText(allSections[i].heading);
+          await speakText(allSections[i].heading, gender);
           if (cancelledRef.current) break;
-          await speakText(allSections[i].body);
+          await speakText(allSections[i].body, gender);
         } catch {
           // Speech error, continue showing
         }
       } else {
-        // If muted, show each section for a calculated reading time
         const wordCount = allSections[i].body.split(" ").length;
         const readTimeMs = Math.max(2000, wordCount * 200);
         await new Promise<void>((r) => {
@@ -82,7 +96,6 @@ export default function Whiteboard() {
       }
 
       if (cancelledRef.current) break;
-      // Small pause between sections
       await new Promise((r) => setTimeout(r, 600));
     }
 
@@ -121,7 +134,7 @@ export default function Whiteboard() {
       setIsLoading(false);
 
       // Start sequential display + speech
-      await playSequence(fetchedSections, isMuted);
+      await playSequence(fetchedSections, isMuted, voiceGender);
     } catch (e: any) {
       console.error(e);
       setSections([{ heading: "Error", body: e.message }]);
@@ -129,7 +142,7 @@ export default function Whiteboard() {
       setIsLoading(false);
       setIsPlaying(false);
     }
-  }, [topic, length, isLoading, isMuted, playSequence]);
+  }, [topic, length, isLoading, isMuted, voiceGender, playSequence]);
 
   const stopPlaying = () => {
     cancelledRef.current = true;
@@ -192,6 +205,26 @@ export default function Whiteboard() {
                   title={lengthLabels[key].desc}
                 >
                   {lengthLabels[key].label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">Voice</label>
+            <div className="flex rounded-md border border-input overflow-hidden">
+              {(["male", "female"] as VoiceGender[]).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setVoiceGender(g)}
+                  disabled={isLoading || isPlaying}
+                  className={`px-3 py-2 text-sm font-medium transition-colors capitalize ${
+                    voiceGender === g
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background text-foreground hover:bg-accent"
+                  } disabled:opacity-50`}
+                >
+                  {g === "male" ? "♂ Male" : "♀ Female"}
                 </button>
               ))}
             </div>
