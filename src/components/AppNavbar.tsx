@@ -16,7 +16,7 @@ export function AppNavbar() {
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
             <Users className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="font-display font-semibold text-foreground hidden sm:inline">GroupForge</span>
+          <span className="font-display font-semibold text-foreground hidden sm:inline">PeerIQ</span>
         </div>
       </div>
       <div className="flex items-center gap-3">

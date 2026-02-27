@@ -56,7 +56,7 @@ export default function Auth() {
             <Users className="w-10 h-10 text-primary-foreground" />
           </div>
           <h1 className="text-4xl font-display font-bold text-primary-foreground mb-4">
-            GroupForge
+            PeerIQ
           </h1>
           <p className="text-lg text-muted-foreground">
             Intelligently form student groups using K-Means clustering on skill vectors. Upload CSV, set group size, get optimal teams.
