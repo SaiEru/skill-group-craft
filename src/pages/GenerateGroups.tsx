@@ -22,6 +22,7 @@ export default function GenerateGroups() {
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [results, setResults] = useState<ClusteredStudent[] | null>(null);
+  const [skillHeaders, setSkillHeaders] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -48,12 +49,13 @@ export default function GenerateGroups() {
       return;
     }
 
-    const students = parseCSV(csvData);
+    const { students, skillHeaders: headers } = parseCSV(csvData);
     if (students.length === 0) {
       toast({ title: "Empty CSV", description: "No valid students found in CSV.", variant: "destructive" });
       return;
     }
 
+    setSkillHeaders(headers);
     const clustered = kMeansClustering(students, groupSize);
     setResults(clustered);
     setSaved(false);
@@ -231,13 +233,17 @@ export default function GenerateGroups() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {students.map((student, i) => (
-                        <li key={i} className="flex items-center justify-between text-sm">
+                        <li key={i} className="space-y-1">
                           <span className="text-foreground font-medium">{student.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            [{student.skills.join(", ")}]
-                          </span>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {student.skills.map((val, si) => (
+                              <Badge key={si} variant="secondary" className="text-xs">
+                                {skillHeaders[si] || `Skill ${si + 1}`}: {val}
+                              </Badge>
+                            ))}
+                          </div>
                         </li>
                       ))}
                     </ul>
