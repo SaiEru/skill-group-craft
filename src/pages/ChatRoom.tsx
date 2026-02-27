@@ -110,7 +110,7 @@ export default function ChatRoom() {
     if (link) sendMessage(link, "link");
   };
 
-  const isMine = (msg: Message) => msg.sender_id === user?.id;
+  const isMine = (msg: Message) => msg.sender_id === user!.id;
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] max-w-3xl mx-auto">
@@ -131,12 +131,12 @@ export default function ChatRoom() {
           <p className="text-center text-muted-foreground text-sm py-8">No messages yet. Say hello!</p>
         )}
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${isMine(msg) ? "justify-end" : "justify-start"}`}>
+          <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[75%] rounded-xl px-4 py-2 text-sm ${
-                isMine(msg)
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground"
+                msg.sender_id === user?.id
+                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                  : "bg-muted text-foreground rounded-bl-sm"
               }`}
             >
               {msg.message_type === "file" ? (
@@ -152,7 +152,7 @@ export default function ChatRoom() {
               ) : (
                 msg.content
               )}
-              <div className={`text-[10px] mt-1 ${isMine(msg) ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+              <div className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                 {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </div>
             </div>
