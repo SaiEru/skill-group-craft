@@ -3,6 +3,7 @@
 interface Student {
   name: string;
   skills: number[];
+  skillNames?: string[];
 }
 
 interface ClusteredStudent extends Student {
@@ -88,23 +89,24 @@ export function kMeansClustering(students: Student[], groupSize: number): Cluste
   }));
 }
 
-export function parseCSV(csvText: string): Student[] {
+export function parseCSV(csvText: string): { students: Student[]; skillHeaders: string[] } {
   const lines = csvText.trim().split("\n");
-  if (lines.length < 2) return [];
+  if (lines.length < 2) return { students: [], skillHeaders: [] };
 
   const headers = lines[0].split(",").map((h) => h.trim());
-  const nameCol = 0; // first column is student name
-  const skillCols = headers.slice(1); // rest are skill columns
+  const skillHeaders = headers.slice(1);
 
-  return lines.slice(1).map((line) => {
+  const students = lines.slice(1).map((line) => {
     const values = line.split(",").map((v) => v.trim());
-    const name = values[nameCol] || "Unknown";
+    const name = values[0] || "Unknown";
     const skills = values.slice(1).map((v) => {
       const num = parseFloat(v);
       return isNaN(num) ? 0 : num;
     });
-    return { name, skills };
+    return { name, skills, skillNames: skillHeaders };
   });
+
+  return { students, skillHeaders };
 }
 
 export type { Student, ClusteredStudent };
