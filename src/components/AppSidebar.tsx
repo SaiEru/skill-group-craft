@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, MessageSquare, Inbox, UserCircle, Zap } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,11 +14,13 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 
-const items = [
+const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Generate Groups", url: "/generate", icon: Users },
+  { title: "Generate Groups", url: "/generate", icon: Zap },
+  { title: "Users", url: "/users", icon: Users },
+  { title: "Requests", url: "/requests", icon: Inbox },
+  { title: "Chat", url: "/chat", icon: MessageSquare },
 ];
 
 export function AppSidebar() {
@@ -36,12 +38,12 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end
+                      end={item.url === "/"}
                       className="hover:bg-sidebar-accent/50 transition-colors"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
@@ -57,6 +59,18 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink
+                to="/profile"
+                className="hover:bg-sidebar-accent/50 transition-colors"
+                activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+              >
+                <UserCircle className="mr-2 h-4 w-4" />
+                {!collapsed && <span>Profile</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={signOut} className="hover:bg-sidebar-accent/50 text-sidebar-foreground">
               <LogOut className="mr-2 h-4 w-4" />
