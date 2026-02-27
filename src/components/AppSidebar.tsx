@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, LogOut, MessageSquare, Inbox, UserCircle, Zap } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, MessageSquare, Inbox, UserCircle, Zap, PenTool } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,7 @@ const mainItems = [
   { title: "Users", url: "/users", icon: Users },
   { title: "Requests", url: "/requests", icon: Inbox },
   { title: "Chat", url: "/chat", icon: MessageSquare },
+  { title: "AI Whiteboard", url: "/whiteboard", icon: PenTool },
 ];
 
 export function AppSidebar() {
