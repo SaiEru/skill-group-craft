@@ -1,9 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import Dashboard from "@/pages/Dashboard";
+import GenerateGroups from "@/pages/GenerateGroups";
 
-const Index = () => {
+export default function GenerateGroupsPage() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -18,9 +18,7 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <Dashboard />
+      <GenerateGroups />
     </AppLayout>
   );
-};
-
-export default Index;
+}
