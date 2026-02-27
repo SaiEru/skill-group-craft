@@ -13,6 +13,7 @@ import UsersPage from "./pages/UsersPage";
 import RequestsPage from "./pages/RequestsPage";
 import ChatPage from "./pages/ChatPage";
 import ChatRoomPage from "./pages/ChatRoomPage";
+import GroupDetailPage from "./pages/GroupDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/requests" element={<RequestsPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/chat/:userId" element={<ChatRoomPage />} />
+            <Route path="/group/:groupId" element={<GroupDetailPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
