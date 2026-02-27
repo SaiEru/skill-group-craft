@@ -135,6 +135,7 @@ export default function Dashboard() {
 
 function GroupCard({ group, isOwner }: { group: Group; isOwner?: boolean }) {
   const [memberCount, setMemberCount] = useState<number>(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase
@@ -147,7 +148,7 @@ function GroupCard({ group, isOwner }: { group: Group; isOwner?: boolean }) {
   }, [group.id]);
 
   return (
-    <Card className="shadow-card hover:shadow-elevated transition-shadow cursor-pointer group">
+    <Card className="shadow-card hover:shadow-elevated transition-shadow cursor-pointer group" onClick={() => navigate(`/group/${group.id}`)}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg font-display">{group.name}</CardTitle>
