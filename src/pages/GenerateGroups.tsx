@@ -234,18 +234,25 @@ export default function GenerateGroups() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {students.map((student, i) => (
-                        <li key={i} className="space-y-1">
-                          <span className="text-foreground font-medium">{student.name}</span>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {student.skills.map((val, si) => (
-                              <Badge key={si} variant="secondary" className="text-xs">
-                                {skillHeaders[si] || `Skill ${si + 1}`}: {val}
-                              </Badge>
-                            ))}
-                          </div>
-                        </li>
-                      ))}
+                      {students.map((student, i) => {
+                        const topSkills = student.skills
+                          .map((val, si) => ({ name: skillHeaders[si] || `Skill ${si + 1}`, val }))
+                          .filter((s) => s.val > 80);
+                        return (
+                          <li key={i} className="space-y-1">
+                            <span className="text-foreground font-medium">{student.name}</span>
+                            {topSkills.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                {topSkills.map((s, si) => (
+                                  <Badge key={si} variant="secondary" className="text-xs">
+                                    {s.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </CardContent>
                 </Card>
