@@ -5,7 +5,8 @@ PeerIQ is an intelligent team formation platform that uses Machine Learning to c
 It goes beyond traditional clustering by focusing on smart, balanced team formation for collaborative projects, hackathons, and academic work.
 
 ---
-
+## Project is Live Now:
+https://skill-group-craft.lovable.app
 ## 🎯 Problem Statement
 
 Manual group formation often results in:
